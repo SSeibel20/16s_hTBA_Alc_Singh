@@ -1,0 +1,26 @@
+﻿SampleID,Sex,Background,Intervention,Genotype,Sample_Type
+CT-1,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-2,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-3,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-4,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-13,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-14,Male,normal total bile acid level,control,C57BL/6,NormCon
+CT-5,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+CT-6,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+CT-7,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+CT-15,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+CT-16,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+CT-17,Male,normal total bile acid level,alcohol,C57BL/6,NormAlc
+HT-16,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-18,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-28,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-32,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-40,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-41,Male,high total bile acid level,control,C57BL/6,HighCon
+HT-19,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+HT-20,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+HT-21,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+HT-8,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+HT-30,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+HT-37,Male,high total bile acid level,alcohol,C57BL/6,HighAlc
+Buff-Neg,,,,,
