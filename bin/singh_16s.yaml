@@ -1,0 +1,10 @@
+name: singh_16s
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - fastqc
+  - multiqc
+  - fastp
