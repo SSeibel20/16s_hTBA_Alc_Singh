@@ -2,6 +2,7 @@
 #based on negative controls
 library(decontam)
 library (microViz)
+library(phyloseq)
 
 #get working directory
 getwd()
@@ -81,8 +82,8 @@ saveRDS(psdecon, file = file.path("R/ps_decontam.Rds"))
 # using psf to have negative controls still present for decontam
 
 #transform to relative abundance
-pst <- psdecon %>%
-  tax_transform("compositional") 
+#pst <- psdecon %>%
+  #tax_transform("compositional") 
 
 # below does the same thing as above, use whichever you prefer
 #pstest <- transform_sample_counts(psdecon, function(x) x / sum(x) ) #788
@@ -93,16 +94,16 @@ pst <- psdecon %>%
 #otu2 <- otu_table(pstest)
 #identical(otu1, otu2)
 
-ntaxa(pst) #788 taxa
+#ntaxa(pst) #788 taxa
 
 #save
-saveRDS(pst, file = file.path("R/ps_decontam_rel.Rds"))
+#saveRDS(pst, file = file.path("R/ps_decontam_rel.Rds"))
 
 #remove taxa with total relative abundance less than 10e-5
-psr <- filter_taxa(pst, function(x) mean(x) > 1e-5, TRUE) #614 taxa (173 removed)
+#psr <- filter_taxa(pst, function(x) mean(x) > 1e-5, TRUE) #614 taxa (173 removed)
 
-ntaxa(psr) # 616
+#ntaxa(psr) # 616
 
 #save decontam ps as RImage
-saveRDS(psr, file = file.path("R/ps_decon_rel.rds"))
+#saveRDS(psr, file = file.path("R/ps_decon_rel.rds"))
 

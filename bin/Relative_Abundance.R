@@ -1,5 +1,6 @@
 library(ggplot2)
 library(tidyverse)
+library(microViz)
 library(viridis)
 library(phyloseq)
 
@@ -16,92 +17,92 @@ getwd()
 RDATA = "R"
 
 # load psdecontam  from ps script
-ps_decon_rel <- readRDS("R/ps_decon_rel.rds")
+ps_decon <- readRDS("R/ps_decontam.rds")
 
-ntaxa(ps_decon_rel) # 616
-
-# filter out negative control in metadata (sample_dat)
-ps_relab <- ps_decon_rel %>%
-  ps_filter(!str_detect(sample_names(ps_decon_rel), "Buff"))
-
-ntaxa(ps_relab) # 614 taxa
-
-saveRDS(ps_relab, file = file.path(RDATA, "ps_rel_no_contr.rds"))
+ntaxa(ps_decon) # 788
 
 # fix and transform tax
-ps_relab <- ps_relab %>%
-  tax_fix()
+ps_relab <- ps_decon %>%
+  tax_fix() %>%
+  tax_transform("compositional")
 
 # check if we have NAs
 anyNA(tax_table(ps_relab)[,"Genus"])
 anyNA(tax_table(ps_relab)[,"Family"])
 anyNA(tax_table(ps_relab)[,"Phylum"])
-
+  
 # melt ps obj to make it useable in ggplot
 ps_relab_melt <- ps_relab %>% psmelt()
 
-# filter based on a threshold
-abundance_threshold <- 0.05  
-# 5% threshold (all taxa with 5% or greater abundance included)
+# reorder samples by groups
+reorder <- c("CT-1", "CT-2", "CT-3", "CT-4", "CT-13", "CT-14", "CT-5", "CT-6", "CT-7", "CT-15", "CT-16", "CT-17", "HT-16", "HT-18", "HT-28", "HT-32", "HT-40", "HT-41", "HT-19", "HT-20", "HT-21", "HT-8", "HT-30", "HT-37")
 
-ps_relab_filt_gen <- ps_relab_melt %>%
-  filter(Abundance >= abundance_threshold) # 84 ASVs
+ps_relab_melt <- ps_relab_melt %>%
+  mutate(
+    Sample = factor(Sample, levels = reorder)
+  )
 
-fire_pal <- c("#03071E","#370617", "#6A040F", "#9D0208", "#D00000", "#DC2F02",
-         "#E85D04", "#F48C06", "#FAA307", "#FFBA08", "#ffd97d")
+# 5% threshold (all taxa with 1% or greater abundance included for descriptive)
+abundance_threshold = 0.01
+ps_relab_high <- ps_relab_melt %>%
+  filter(Abundance >= abundance_threshold) # 496 ASVs
 
-earth_pal <- c("#03071E","#582F0E", "#7F4F24", "#936639", "#A68A64", "#B6AD90",
-              "#C2C5AA", "#A4AC86", "#656D4A", "#414833", "#333D29")
-         
+ps_relab_gen_low <- ps_relab_melt %>%
+  filter(Abundance < abundance_threshold) # 18,912 ASVs
 
-# relative abundance with ggplot2
-ggplot(ps_relab_filt_gen, aes(Sample, Abundance, fill = Genus)) +
+# Replace these low-abundance Genera with "Other"
+ps_relab_melt_grouped <- ps_relab_melt %>%
+  mutate(
+    Genus_grouped = ifelse(Abundance < 0.01, "Other", Genus)
+  )
+
+# relative abundance with ggplot2 Genus
+ggplot(ps_relab_melt_grouped, aes(Sample, Abundance, fill = Genus_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
-  labs(x = "Sample", y = "Abundance") +
+  labs(xlab = "Sample", ylab = "Abundance (Proportion)", title = "Relative Abundance by Genus", fill = "Genus", caption = "ASVs less than 1% abundance listed as Other") +
   ylim(0, 1) +
-  scale_fill_manual(values = earth_pal) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  guides(fill = guide_legend(ncol = 4)) + # Set number of columns in legend
-  theme(axis.text= element_text(size = 20),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        axis.title.y = element_text(size = 20),
-        axis.title.x = element_text(size = 20),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "bottom")
+  scale_fill_viridis_d(option = "magma") +
+  guides(fill = guide_legend(ncol = 8)) + # Set number of columns in legend
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 16),
+        axis.text.y = element_text(size = 20), 
+        legend.text = element_text(size = 10),
+        legend.title = element_text(angle = 90, size = 20),
+        axis.title.y = element_text(size = 24),
+        axis.title.x = element_text(angle = 360,  vjust = 0.5, hjust = 0.5, size = 24),
+        plot.title = element_text(size = 24, hjust = 0.5),
+       legend.position = "bottom")
 
-ggsave("viz/relab_genus.pdf", plot = last_plot(), height = 8, width = 26, units = "in")
+ggsave("viz/relab_genus1.pdf", plot = last_plot(), height = 8, width = 16, units = "in")
 
 # relative abundance by Family
 
-# filter based on a threshold
-abundance_threshold <- 0.01 
-# 1% threshold (all taxa with 1% or greater abundance included)
+# 1% threshold (all taxa with 1% or greater abundance included for descriptive)
 
-ps_relab_filt_fam <- ps_relab_melt %>%
-  filter(Abundance >= abundance_threshold)
+# Replace these low-abundance Family with "Other"
+ps_relab_melt_grouped_fam <- ps_relab_melt %>%
+  mutate(
+    Family_grouped = ifelse(Abundance < 0.01, "Other", Family)
+  )
 
-# palettes
-earth <- c("#03071E","#582F0E", "#7F4F24", "#936639", "#A68A64", "#B6AD90",
-               "#C2C5AA", "#A4AC86", "#656D4A", "#414833", "#333D29", "#31572c")
-
-#relative abundance with ggplot2
-ggplot(ps_relab_filt_fam, aes(Sample, Abundance, fill = Family)) +
+# relative abundance with ggplot2 Family
+ggplot(ps_relab_melt_grouped_fam, aes(Sample, Abundance, fill = Family_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
-  labs(x = "Sample", y = "Abundance") +
+  labs(xlab = "Sample", ylab = "Abundance (Proportion)", title = "Relative Abundance by Family", fill = "Family", caption = "ASVs less than 1% abundance listed as Other") +
   ylim(0, 1) +
-  scale_fill_manual(values = earth) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  guides(fill = guide_legend(ncol = 4)) + # Set number of columns in legend
-  theme(axis.text= element_text(size = 20),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        axis.title.y = element_text(size = 20),
-        axis.title.x = element_text(size = 20),
-        plot.title = element_text(hjust = 0.5),
+  scale_fill_viridis_d(option = "magma") +
+  guides(fill = guide_legend(ncol = 7)) + # Set number of columns in legend
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 16),
+        axis.text.y = element_text(size = 20), 
+        legend.text = element_text(size = 10),
+        legend.title = element_text(angle = 90, size = 20),
+        axis.title.y = element_text(size = 24),
+        axis.title.x = element_text(angle = 360,  vjust = 0.5, hjust = 0.5, size = 24),
+        plot.title = element_text(size = 24, hjust = 0.5),
         legend.position = "bottom")
 
-ggsave("viz/relab_family.pdf", plot = last_plot(), height = 8, width = 26, units = "in")
+ggsave("viz/relab_family.pdf", plot = last_plot(), height = 8, width = 16, units = "in")
 
 #relative abundance by Phylum
 
@@ -109,30 +110,30 @@ ggsave("viz/relab_family.pdf", plot = last_plot(), height = 8, width = 26, units
 abundance_threshold <- 0.01
 # 1% threshold (all taxa with 1% or greater abundance included)
 
-ps_relab_filt_fam <- ps_relab_melt %>%
+ps_relab_filt_phy <- ps_relab_melt %>%
   filter(Abundance >= abundance_threshold)
 
-# palettes
-earth <- c("#582F0E", "#936639", "#A68A64",
-           "#C2C5AA", "#656D4A", "#333D29")
+# Replace these low-abundance Phylum with "Other"
+ps_relab_melt_grouped_phy <- ps_relab_melt %>%
+  mutate(
+    Phylum_grouped = ifelse(Abundance < 0.01, "Other", Phylum)
+  )
 
-# relative abundance with ggplot2
-ggplot(ps_relab_filt_fam, aes(Sample, Abundance, fill = Phylum)) +
+# relative abundance with ggplot2 Phylum
+ggplot(ps_relab_melt_grouped_phy, aes(Sample, Abundance, fill = Phylum_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
-  labs(x = "Sample", y = "Abundance") +
+  labs(xlab = "Sample", ylab = "Abundance (Proportion)", title = "Relative Abundance by Phylum", fill = "Phylum", caption = "ASVs less than 1% abundance listed as Other") +
   ylim(0, 1) +
-  scale_fill_manual(values = earth) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  guides(fill = guide_legend(ncol = 4)) + # Set number of columns in legend
-  theme(axis.text= element_text(size = 20),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        axis.title.y = element_text(size = 20),
-        axis.title.x = element_text(size = 20),
-        plot.title = element_text(hjust = 0.5),
+  scale_fill_viridis_d(option = "magma") +
+  guides(fill = guide_legend(ncol = 6)) + # Set number of columns in legend
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 16),
+        axis.text.y = element_text(size = 20), 
+        legend.text = element_text(size = 10),
+        legend.title = element_text(angle = 90, size = 20),
+        axis.title.y = element_text(size = 24),
+        axis.title.x = element_text(angle = 360,  vjust = 0.5, hjust = 0.5, size = 24),
+        plot.title = element_text(size = 24, hjust = 0.5),
         legend.position = "bottom")
 
-ggsave("viz/relab_phylum.pdf", plot = last_plot(), height = 8, width = 26, units = "in")
-
-
-
+ggsave("viz/relab_phylum.pdf", plot = last_plot(), height = 8, width = 16, units = "in")
