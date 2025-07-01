@@ -1,0 +1,5 @@
+"Background"	"Intervention"	"variable"	"n"	"mean"	"sd"
+"high total bile acid level"	"alcohol"	"Shannon"	6	2.054	0.237
+"normal total bile acid level"	"alcohol"	"Shannon"	6	2.091	0.332
+"high total bile acid level"	"control"	"Shannon"	6	1.541	0.846
+"normal total bile acid level"	"control"	"Shannon"	6	2.21	0.459
